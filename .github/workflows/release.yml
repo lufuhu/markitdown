@@ -17,13 +17,28 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: markitdown-linux-x64
+            arch: amd64
+            artifact_name: markitdown-linux-amd64
+            executable_name: markitdown
+          - os: ubuntu-latest
+            arch: arm64
+            artifact_name: markitdown-linux-arm64
             executable_name: markitdown
           - os: macos-latest
-            artifact_name: markitdown-macos-x64
+            arch: amd64
+            artifact_name: markitdown-darwin-amd64
+            executable_name: markitdown
+          - os: macos-latest
+            arch: arm64
+            artifact_name: markitdown-darwin-arm64
             executable_name: markitdown
           - os: windows-latest
-            artifact_name: markitdown-windows-x64.exe
+            arch: amd64
+            artifact_name: markitdown-windows-amd64.exe
+            executable_name: markitdown.exe
+          - os: windows-latest
+            arch: arm64
+            artifact_name: markitdown-windows-arm64.exe
             executable_name: markitdown.exe
 
     steps:
