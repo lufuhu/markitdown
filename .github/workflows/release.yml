@@ -58,7 +58,7 @@ jobs:
       - name: Build with PyInstaller
         # Note: --collect-all magika is required for file type inference
         run: |
-          pyinstaller --onefile --name markitdown --collect-all magika scripts/cli.py
+          pyinstaller --onefile --icon=icon.ico --name markitdown --collect-all magika scripts/cli.py
 
       - name: Rename binary for platform
         shell: bash
