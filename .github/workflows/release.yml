@@ -37,7 +37,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install .[all] pyinstaller
+          pip install -e 'packages/markitdown[all]'
+          pip install pyinstaller
 
       - name: Build with PyInstaller
         # Note: --collect-all magika is required for file type inference
