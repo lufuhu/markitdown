@@ -4,6 +4,8 @@
 import argparse
 import sys
 import codecs
+import os
+import glob
 from textwrap import dedent
 from importlib.metadata import entry_points
 from .__about__ import __version__
@@ -110,6 +112,12 @@ def main():
         help="Keep data URIs (like base64-encoded images) in the output. By default, data URIs are truncated.",
     )
 
+    parser.add_argument(
+        "--pattern",
+        action="store_true",
+        help="Process all supported files in a directory. If specified, filename should be a directory path.",
+    )
+
     parser.add_argument("filename", nargs="?")
     args = parser.parse_args()
 
@@ -186,23 +194,47 @@ def main():
     else:
         markitdown = MarkItDown(enable_plugins=args.use_plugins)
 
-    if args.filename is None:
-        result = markitdown.convert_stream(
-            sys.stdin.buffer,
-            stream_info=stream_info,
-            keep_data_uris=args.keep_data_uris,
-        )
+    if args.pattern is not None:
+        if args.filename is None:
+            _exit_with_error("Directory path is required when using batch mode.")
+        if args.output is None:
+            _exit_with_error("Output directory path is required when using batch mode.")
+
+        _handle_batch_convert(args, stream_info, markitdown)
     else:
+        if args.filename is None:
+            result = markitdown.convert_stream(
+                sys.stdin.buffer,
+                stream_info=stream_info,
+                keep_data_uris=args.keep_data_uris,
+            )
+        else:
+            result = markitdown.convert(
+                args.filename, stream_info=stream_info, keep_data_uris=args.keep_data_uris
+            )
+
+        _handle_output(args, result)
+
+
+def _handle_batch_convert(args, stream_info, markitdown: MarkItDown):
+    """Handle output to directory"""
+    input_dir = os.path.dirname(args.filename)
+    output_dir = os.path.dirname(args.output)
+    for input_file in glob.glob(args.pattern, root_dir=input_dir, recursive=True):
         result = markitdown.convert(
-            args.filename, stream_info=stream_info, keep_data_uris=args.keep_data_uris
+            os.path.join(input_dir, input_file), stream_info=stream_info, keep_data_uris=args.keep_data_uris
         )
-
-    _handle_output(args, result)
-
+        # Determine output directory
+        filename, _ = os.path.splitext(input_file)
+        output_file = os.path.join(output_dir, filename + ".md")
+        os.makedirs(os.path.dirname(output_file), mode=0o777, exist_ok=True)
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(result.markdown)
 
 def _handle_output(args, result: DocumentConverterResult):
     """Handle output to stdout or file"""
     if args.output:
+        os.makedirs(os.path.dirname(args.output), mode=0o777, exist_ok=True)
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(result.markdown)
     else:
