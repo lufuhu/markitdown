@@ -20,25 +20,13 @@ jobs:
             arch: amd64
             artifact_name: markitdown-linux-amd64
             executable_name: markitdown
-          - os: ubuntu-latest
-            arch: arm64
-            artifact_name: markitdown-linux-arm64
-            executable_name: markitdown
           - os: macos-latest
             arch: amd64
             artifact_name: markitdown-darwin-amd64
             executable_name: markitdown
-          - os: macos-latest
-            arch: arm64
-            artifact_name: markitdown-darwin-arm64
-            executable_name: markitdown
           - os: windows-latest
             arch: amd64
             artifact_name: markitdown-windows-amd64.exe
-            executable_name: markitdown.exe
-          - os: windows-latest
-            arch: arm64
-            artifact_name: markitdown-windows-arm64.exe
             executable_name: markitdown.exe
 
     steps:
@@ -52,21 +40,25 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -e 'packages/markitdown[all]'
-          pip install pyinstaller
+          pip install -e 'packages/markitdown'
+          pip install nuitka
 
-      - name: Build with PyInstaller
-        # Note: --collect-all magika is required for file type inference
-        run: |
-          pyinstaller --onefile --icon=icon.ico --name markitdown --collect-all magika scripts/cli.py
-
-      - name: Rename binary for platform
-        shell: bash
-        run: |
-          mv dist/${{ matrix.executable_name }} dist/${{ matrix.artifact_name }}
-
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Build Executable with Nuitka
+        uses: Nuitka/Nuitka-Action@main
         with:
-          files: dist/${{ matrix.artifact_name }}
+          nuitka-version: main
+          script-name: scripts/cli.py.py
+          # many more Nuitka options available, see action doc, but it's best
+          # to use nuitka-project: options in your code, so e.g. you can make
+          # a difference for macOS and create an app bundle there.
+          mode: app
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: | # match what's created for the 3 OSes
+              build/*.exe
+              build/*.bin
+              build/*.app/**/*
+          include-hidden-files: true
