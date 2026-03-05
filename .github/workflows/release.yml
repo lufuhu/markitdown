@@ -16,7 +16,27 @@ jobs:
     strategy:
       matrix:
         include:
+          - os: ubuntu-latest
+            arch: amd64
+            artifact_name: markitdown-linux-amd64
+            executable_name: markitdown
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            artifact_name: markitdown-linux-arm64
+            executable_name: markitdown
+          - os: macos-15-intel
+            arch: amd64
+            artifact_name: markitdown-darwin-amd64
+            executable_name: markitdown
+          - os: macos-latest
+            arch: arm64
+            artifact_name: markitdown-darwin-arm64
+            executable_name: markitdown
           - os: windows-latest
+            arch: amd64
+            artifact_name: markitdown-windows-amd64.exe
+            executable_name: markitdown.exe
+          - os: windows-11-arm
             arch: arm64
             artifact_name: markitdown-windows-arm64.exe
             executable_name: markitdown.exe
