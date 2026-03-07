@@ -114,7 +114,7 @@ def main():
 
     parser.add_argument(
         "--pattern",
-        action="store_true",
+        type=str,
         help="Process all supported files in a directory. If specified, filename should be a directory path.",
     )
 
